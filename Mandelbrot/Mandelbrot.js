@@ -99,6 +99,8 @@ let tempRect = new Rectangle2D(-2.2, -1.2, 2.9, 2.4);
 let finalRect = new Rectangle2D(-2.2, -1.2, 2.9, 2.4);
 let firstPoint = new Float32Array([0.0, 0.0]);
 let mouseDownInCanvas = false;
+let maxColor = [1.0, 1.0, 1.0], minColor = [0.0, 0.0, 0.0];
+
 const ratio = 2.9 / 2.4;
 
 function main() {
@@ -146,6 +148,9 @@ function main() {
         function (ev) {
             mouseDownInCanvas = false;
         });
+
+    document.getElementById('min-color').addEventListener('change', setMinColor);
+    document.getElementById('max-color').addEventListener('change', setMaxColor);
     drawPicture();
 }
 
@@ -157,7 +162,7 @@ function findRect(xy) {
     finalRect.cornerX = tempRect.cornerX;
     finalRect.cornerY = tempRect.cornerY;
     finalRect.width = Math.min(tempRect.width, tempRect.height * ratio);
-    finalRect.height = Math.min(tempRect.height, tempRect.width / ratio);
+    finalRect.height = finalRect.width / ratio;
     tempRect.refreshCorners();
     finalRect.refreshCorners();
 }
@@ -196,11 +201,11 @@ function drawPicture() {
     let zoomScale = gl.getUniformLocation(mandelProgram, 'zoomScale');
     gl.uniform1f(zoomScale, 1.0);
 
-    let maxColor = gl.getUniformLocation(mandelProgram, 'maxColor');
-    gl.uniform4f(maxColor, 0.949, 0.905, 0.250, 1.0);
+    let upperColor = gl.getUniformLocation(mandelProgram, 'maxColor');
+    gl.uniform4f(upperColor, maxColor[0], maxColor[1], maxColor[2], 1.0);
 
-    let minColor = gl.getUniformLocation(mandelProgram, 'minColor');
-    gl.uniform4f(minColor, 0.043, 0.011, 0.211, 1.0);
+    let lowerColor = gl.getUniformLocation(mandelProgram, 'minColor');
+    gl.uniform4f(lowerColor, minColor[0], minColor[1], minColor[2], 1.0);
 
 
     gl.clearColor(0, 0, 0, 1);
@@ -232,7 +237,7 @@ function drawRect() {
         (finalRect.corners[4] - cornersRect.cornerX - cornersRect.width / 2) / cornersRect.width * 2,
         (finalRect.corners[5] - cornersRect.cornerY - cornersRect.height / 2) / cornersRect.height * 2
     ]);
-    console.log(vertices);
+    // console.log(vertices);
 
     let FSIZE = vertices.BYTES_PER_ELEMENT;
 
@@ -259,3 +264,31 @@ function drawRect() {
     gl.deleteBuffer(verticesBuffer);
 }
 
+function setMinColor() {
+    let str = document.getElementById('min-color').value;
+    minColor[0] = hexToRgb(str).r / 255.0;
+    minColor[1] = hexToRgb(str).g / 255.0;
+    minColor[2] = hexToRgb(str).b / 255.0;
+}
+
+function setMaxColor() {
+    let str = document.getElementById('max-color').value;
+    maxColor[0] = hexToRgb(str).r / 255.0;
+    maxColor[1] = hexToRgb(str).g / 255.0;
+    maxColor[2] = hexToRgb(str).b / 255.0;
+}
+
+function hexToRgb(hex) {
+    // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
+    var shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+    hex = hex.replace(shorthandRegex, function(m, r, g, b) {
+        return r + r + g + g + b + b;
+    });
+
+    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16)
+    } : null;
+}
