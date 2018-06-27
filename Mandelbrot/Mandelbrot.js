@@ -8,7 +8,7 @@ var vshader_src =
     }';
 
 var fshader_src =
-    '#define maxIter (100)\n' +
+    '#define maxIter (500)\n' +
     '\n' +
     'precision highp float;\n' +
     '\n' +
@@ -32,7 +32,7 @@ var fshader_src =
     '        float x = (z.x * z.x - z.y * z.y) + c.x;\n' +
     '        float y = (z.y * z.x + z.x * z.y) + c.y;\n' +
     '\n' +
-    '        if((x*x + y*y) > 100.0){\n' +
+    '        if((x*x + y*y) > 4.0){\n' +
     '            i = j;\n' +
     '            break;\n' +
     '        }\n' +
